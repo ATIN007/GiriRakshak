@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --color-brand-navy: #1F3864;
+  --color-brand-teal: #1F9D75;
+  --color-brand-orange: #E8703A;
+  --color-risk-low: #10B981;
+  --color-risk-moderate: #FBBF24;
+  --color-risk-high: #F97316;
+  --color-risk-critical: #EF4444;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  overflow-x: hidden;
+}
+
+/* Custom Leaflet Map adjustments */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Marker pulse animations for Critical risk zones */
+@keyframes pulse-critical {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+.marker-critical {
+  animation: pulse-critical 2s infinite;
+  border-radius: 50%;
+}

@@ -1,0 +1,248 @@
+import React, { useState } from 'react';
+import { 
+  X, CloudRain, Droplets, Mountain, Compass, Zap, 
+  AlertOctagon, CheckCircle2, TrendingUp, Info, Activity 
+} from 'lucide-react';
+import { 
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, 
+  LineChart, Line, CartesianGrid, ReferenceLine 
+} from 'recharts';
+import { getRiskColor, getRiskBadgeClass } from '../config';
+
+export default function ZoneDetailPanel({ 
+  zone, 
+  onClose, 
+  onSimulateSpike, 
+  simulating = false 
+}) {
+  if (!zone) return null;
+
+  const riskColor = getRiskColor(zone.current_risk_score);
+  const badgeClass = getRiskBadgeClass(zone.risk_level);
+
+  // Extract latest SHAP breakdown from history if available, or fallback
+  const latestHistory = zone.history && zone.history.length > 0 ? zone.history[0] : null;
+  const shapRaw = latestHistory?.shap_breakdown || {
+    rainfall: 0.35,
+    soil_moisture: 0.35,
+    slope: 0.20,
+    elevation: 0.10
+  };
+
+  // Format SHAP data for horizontal bar chart
+  const shapChartData = [
+    { name: 'Rainfall', value: Math.round((shapRaw.rainfall || 0) * 100), fill: '#3B82F6' },
+    { name: 'Soil Moisture', value: Math.round((shapRaw.soil_moisture || 0) * 100), fill: '#1F9D75' },
+    { name: 'Slope Angle', value: Math.round((shapRaw.slope || 0) * 100), fill: '#E8703A' },
+    { name: 'Elevation', value: Math.round((shapRaw.elevation || 0) * 100), fill: '#8B5CF6' }
+  ].sort((a, b) => b.value - a.value);
+
+  // Format chronological history for line chart
+  const historyChartData = (zone.history || [])
+    .slice()
+    .reverse()
+    .map((item, idx) => {
+      const timeStr = item.timestamp 
+        ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : `T-${idx}`;
+      return {
+        time: timeStr,
+        risk: Math.round(item.risk_score),
+        rainfall: item.rainfall_mm,
+        moisture: item.soil_moisture_pct
+      };
+    });
+
+  return (
+    <div className="absolute top-4 right-4 z-[450] w-96 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[calc(100vh-6rem)] animate-in slide-in-from-right-8 duration-300">
+      
+      {/* Header */}
+      <div className="bg-[#1F3864] text-white p-4 flex items-start justify-between">
+        <div>
+          <div className="text-xs font-semibold text-[#1F9D75] uppercase tracking-wider">
+            Monitoring Point #{zone.id}
+          </div>
+          <h2 className="text-base font-bold text-white leading-tight mt-0.5">
+            {zone.name}
+          </h2>
+          <div className="text-xs text-slate-300 mt-0.5">
+            Lat: {zone.lat.toFixed(4)}° • Lon: {zone.lon.toFixed(4)}°
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="text-slate-300 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Scrollable Content Body */}
+      <div className="p-4 overflow-y-auto space-y-4">
+        
+        {/* Risk Score Spotlight Card */}
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-center justify-between">
+          <div>
+            <div className="text-xs text-slate-500 font-medium">Computed Hazard Risk</div>
+            <div className="flex items-baseline space-x-2 mt-0.5">
+              <span className="text-3xl font-black text-slate-900">
+                {Math.round(zone.current_risk_score)}
+              </span>
+              <span className="text-xs text-slate-400 font-medium">/ 100</span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold border ${badgeClass}`}>
+              {zone.risk_level} Risk
+            </span>
+            <div className="text-[10px] text-slate-400 mt-1">
+              Updated: {new Date(zone.last_updated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>
+        </div>
+
+        {/* Live Terrain & Telemetry 4-Grid */}
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          
+          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center space-x-2.5">
+            <div className="p-2 rounded-md bg-blue-50 text-blue-600">
+              <CloudRain className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-[10px] text-slate-400 uppercase font-semibold">Rainfall</div>
+              <div className="font-bold text-slate-800 text-sm">{zone.current_rainfall_mm} mm</div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center space-x-2.5">
+            <div className="p-2 rounded-md bg-emerald-50 text-emerald-600">
+              <Droplets className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-[10px] text-slate-400 uppercase font-semibold">Soil Moisture</div>
+              <div className="font-bold text-slate-800 text-sm">{zone.current_soil_moisture_pct}%</div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center space-x-2.5">
+            <div className="p-2 rounded-md bg-orange-50 text-orange-600">
+              <Mountain className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-[10px] text-slate-400 uppercase font-semibold">Slope Angle</div>
+              <div className="font-bold text-slate-800 text-sm">{zone.slope_angle_deg}°</div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center space-x-2.5">
+            <div className="p-2 rounded-md bg-purple-50 text-purple-600">
+              <Compass className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-[10px] text-slate-400 uppercase font-semibold">Elevation</div>
+              <div className="font-bold text-slate-800 text-sm">{zone.elevation_m} m</div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* DEMO ACTION: Simulate Rainfall Spike Button */}
+        <div>
+          <button
+            onClick={() => onSimulateSpike(zone)}
+            disabled={simulating}
+            className="w-full bg-gradient-to-r from-[#E8703A] to-[#d45f2a] hover:from-[#d45f2a] hover:to-[#b84e1e] text-white py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center space-x-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-50"
+          >
+            <Zap className={`h-4 w-4 ${simulating ? 'animate-spin' : 'text-amber-200'}`} />
+            <span>
+              {simulating ? 'Simulating Acute Monsoon Event...' : '⚡ Simulate Rainfall Spike (Live Demo)'}
+            </span>
+          </button>
+          <p className="text-[10px] text-slate-400 text-center mt-1">
+            Pushes acute rainfall surge into zone & re-runs AI inference with SHAP.
+          </p>
+        </div>
+
+        {/* USP 1: Explainable AI — SHAP Feature Attribution */}
+        <div className="border border-slate-200 rounded-xl p-3 bg-white">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center space-x-1.5">
+              <Activity className="h-3.5 w-3.5 text-[#1F9D75]" />
+              <span className="font-bold text-xs text-slate-800">
+                Explainable AI (SHAP Breakdown)
+              </span>
+            </div>
+            <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">
+              USP 1
+            </span>
+          </div>
+          <p className="text-[10px] text-slate-500 mb-2">
+            Relative weight contributing to the current risk score:
+          </p>
+
+          <div className="h-36 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                layout="vertical"
+                data={shapChartData}
+                margin={{ top: 5, right: 25, left: 10, bottom: 5 }}
+              >
+                <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fontSize: 9 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#475569' }} width={75} />
+                <Tooltip 
+                  formatter={(val) => [`${val}% Contribution`, 'SHAP Weight']}
+                  contentStyle={{ fontSize: '11px', borderRadius: '8px' }}
+                />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={14} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Historical Trend Line Chart */}
+        {historyChartData.length > 0 && (
+          <div className="border border-slate-200 rounded-xl p-3 bg-white">
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center space-x-1.5">
+                <TrendingUp className="h-3.5 w-3.5 text-blue-600" />
+                <span className="font-bold text-xs text-slate-800">
+                  Risk Progression History
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400">
+                {historyChartData.length} records
+              </span>
+            </div>
+
+            <div className="h-32 w-full mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={historyChartData}
+                  margin={{ top: 5, right: 15, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="time" tick={{ fontSize: 9 }} stroke="#94A3B8" />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 9 }} stroke="#94A3B8" />
+                  <Tooltip 
+                    formatter={(val) => [`${val} / 100`, 'Hazard Risk']}
+                    contentStyle={{ fontSize: '11px', borderRadius: '8px' }}
+                  />
+                  <ReferenceLine y={80} stroke="#EF4444" strokeDasharray="3 3" label={{ value: 'Critical (80)', fill: '#EF4444', fontSize: 8 }} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="risk" 
+                    stroke={riskColor} 
+                    strokeWidth={2.5}
+                    dot={{ r: 3, fill: riskColor }} 
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+    </div>
+  );
+}
