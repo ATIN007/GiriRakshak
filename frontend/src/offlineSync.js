@@ -1,3 +1,5 @@
+import { apiCreateReport } from './api';
+
 const STORAGE_KEY = 'girirakshak_offline_reports';
 
 export function getLocalReports() {
@@ -30,7 +32,7 @@ export function saveLocalReport(report) {
   }
 }
 
-export async function syncLocalReports(apiBase) {
+export async function syncLocalReports() {
   const localReports = getLocalReports();
   const unSynced = localReports.filter(r => !r.synced);
 
@@ -55,18 +57,9 @@ export async function syncLocalReports(apiBase) {
           synced: true
         };
 
-        const res = await fetch(`${apiBase}/hazard-reports`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-          updatedLocal[i].synced = true;
-          syncedCount++;
-        } else {
-          failedCount++;
-        }
+        await apiCreateReport(payload);
+        updatedLocal[i].synced = true;
+        syncedCount++;
       } catch (err) {
         console.warn("Sync failed for item (offline):", err);
         failedCount++;
