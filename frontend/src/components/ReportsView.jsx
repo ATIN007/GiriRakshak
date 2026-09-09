@@ -252,6 +252,24 @@ export default function ReportsView({
               <span>{simulateOffline ? 'Disable Sim. Offline' : 'Demo: Simulate Offline'}</span>
             </button>
 
+            {/* Clear Local Queue Button */}
+            {localQueue.length > 0 && (
+              <button
+                onClick={() => {
+                  localStorage.removeItem('girirakshak_offline_reports');
+                  refreshLocalQueue();
+                  setFeedbackBanner({
+                    type: 'info',
+                    text: 'Local offline report queue cleared.'
+                  });
+                }}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-semibold transition"
+                title="Clears reports stored in browser localStorage"
+              >
+                Clear Local Queue
+              </button>
+            )}
+
             {/* Manual Sync Button */}
             {pendingCount > 0 && (
               <button
