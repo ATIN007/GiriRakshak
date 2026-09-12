@@ -3,8 +3,9 @@ import {
   Database, CloudRain, Satellite, Droplets, History, Map, 
   CheckCircle2, ExternalLink, ShieldAlert, Cpu, ArrowRight, Info, AlertCircle 
 } from 'lucide-react';
+import SolutionMatrix from './SolutionMatrix';
 
-export default function MethodologyView({ onBackToDashboard }) {
+export default function MethodologyView({ onBackToDashboard, onNavigateTab, onSelectZone }) {
   const dataSources = [
     {
       id: 'rainfall',
@@ -115,6 +116,11 @@ export default function MethodologyView({ onBackToDashboard }) {
             &nbsp;All algorithmic calculations and SHAP explainability models operate identically whether parsing live API feeds or calibrated synthetic representations.
           </p>
         </div>
+      </div>
+
+      {/* Problem-Solution Impact Matrix: How GiriRakshak Solves the 3 Core Challenges */}
+      <div className="mb-8">
+        <SolutionMatrix onNavigateTab={onNavigateTab} onSelectZone={onSelectZone} />
       </div>
 
       {/* 4-Stage Architecture Pipeline Card */}

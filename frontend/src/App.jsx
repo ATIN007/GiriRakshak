@@ -6,6 +6,7 @@ import AlertsView from './components/AlertsView';
 import ReportsView from './components/ReportsView';
 import MethodologyView from './components/MethodologyView';
 import AboutModelView from './components/AboutModelView';
+import SolutionMatrix from './components/SolutionMatrix';
 import { 
   apiFetchZones, 
   apiFetchZoneDetails, 
@@ -15,7 +16,7 @@ import {
   apiSendTestAlert 
 } from './api';
 import { syncLocalReports, getLocalReports } from './offlineSync';
-import { AlertTriangle, CheckCircle, BellRing, Sparkles, Loader2, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle, BellRing, Sparkles, Loader2, RefreshCw, X } from 'lucide-react';
 
 export default function App() {
   const [zones, setZones] = useState([]);
@@ -23,6 +24,7 @@ export default function App() {
   const [alerts, setAlerts] = useState([]);
   const [reports, setReports] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [showSolutionModal, setShowSolutionModal] = useState(false);
   
   // Loading states
   const [initialLoading, setInitialLoading] = useState(true);
@@ -282,6 +284,7 @@ export default function App() {
               zones={zones}
               selectedZone={selectedZone}
               onSelectZone={handleSelectZone}
+              onOpenSolutionModal={() => setShowSolutionModal(true)}
             />
 
             {selectedZone && (
@@ -320,6 +323,12 @@ export default function App() {
         {activeTab === 'methodology' && (
           <MethodologyView
             onBackToDashboard={() => setActiveTab('dashboard')}
+            onNavigateTab={(tab) => setActiveTab(tab)}
+            onSelectZone={(zoneId) => {
+              setActiveTab('dashboard');
+              const target = zones.find(z => z.id === zoneId) || zones[0];
+              if (target) fetchZoneDetails(target.id);
+            }}
           />
         )}
 
@@ -328,6 +337,45 @@ export default function App() {
           <AboutModelView
             onBackToDashboard={() => setActiveTab('dashboard')}
           />
+        )}
+
+        {/* Floating Modal: How GiriRakshak Solves the 3 Core Challenges */}
+        {showSolutionModal && (
+          <div className="fixed inset-0 z-[600] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 relative">
+              <div className="sticky top-0 bg-white/95 backdrop-blur-sm px-6 py-4 border-b border-slate-200 flex items-center justify-between z-10">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-black text-slate-900 tracking-tight">
+                    🎯 Problem-Solution Traceability
+                  </span>
+                  <span className="text-xs bg-[#1F9D75] text-white px-2 py-0.5 rounded-full font-bold">
+                    Interactive
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowSolutionModal(false)}
+                  className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <SolutionMatrix
+                  onNavigateTab={(tab) => {
+                    setShowSolutionModal(false);
+                    setActiveTab(tab);
+                  }}
+                  onSelectZone={(zoneId) => {
+                    setShowSolutionModal(false);
+                    setActiveTab('dashboard');
+                    const target = zones.find(z => z.id === zoneId) || zones[0];
+                    if (target) fetchZoneDetails(target.id);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
       </main>

@@ -1,9 +1,9 @@
 import React from 'react';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, Popup } from 'react-leaflet';
 import { getRiskColor, getRiskBadgeClass } from '../config';
-import { AlertTriangle, TrendingUp, Compass, CloudRain } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Compass, CloudRain, CheckCircle2 } from 'lucide-react';
 
-export default function MapView({ zones = [], selectedZone, onSelectZone }) {
+export default function MapView({ zones = [], selectedZone, onSelectZone, onOpenSolutionModal }) {
   // Center of Assam/Meghalaya corridor (between Guwahati, Shillong, and Kaziranga)
   const defaultCenter = [25.85, 92.35];
   const defaultZoom = 8;
@@ -91,6 +91,13 @@ export default function MapView({ zones = [], selectedZone, onSelectZone }) {
           <span className="w-2.5 h-2.5 rounded-full bg-[#1F9D75]"></span>
           <span>Corridor 2: NH-37 (Brahmaputra Valley / Kaziranga Belt)</span>
         </div>
+        <button
+          onClick={onOpenSolutionModal}
+          className="bg-gradient-to-r from-[#1F3864] to-[#1F9D75] hover:from-[#152747] hover:to-[#17805e] text-white px-3 py-1.5 rounded-lg shadow-md border border-white/20 text-xs font-bold pointer-events-auto flex items-center space-x-1.5 transition active:scale-95 self-start cursor-pointer"
+        >
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-300" />
+          <span>🎯 How This Solves It (3 Core Problems)</span>
+        </button>
       </div>
 
       {/* Floating Map Legend */}
