@@ -4,6 +4,7 @@ import MapView from './components/MapView';
 import ZoneDetailPanel from './components/ZoneDetailPanel';
 import AlertsView from './components/AlertsView';
 import ReportsView from './components/ReportsView';
+import MethodologyView from './components/MethodologyView';
 import { 
   apiFetchZones, 
   apiFetchZoneDetails, 
@@ -310,6 +311,13 @@ export default function App() {
             cloudReports={reports}
             onRefreshCloud={fetchReports}
             zones={zones}
+          />
+        )}
+
+        {/* Tab 4: Data Sources & Methodology */}
+        {activeTab === 'methodology' && (
+          <MethodologyView
+            onBackToDashboard={() => setActiveTab('dashboard')}
           />
         )}
 

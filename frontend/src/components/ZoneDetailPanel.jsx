@@ -101,49 +101,59 @@ export default function ZoneDetailPanel({
           </div>
         </div>
 
-        {/* Live Terrain & Telemetry 4-Grid */}
+        {/* Live Terrain & Telemetry 4-Grid with Specific Real Product Labels */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           
           <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center space-x-2.5">
-            <div className="p-2 rounded-md bg-blue-50 text-blue-600">
+            <div className="p-2 rounded-md bg-blue-50 text-blue-600 flex-shrink-0">
               <CloudRain className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-[10px] text-slate-400 uppercase font-semibold">Rainfall</div>
+              <div className="text-[9px] text-blue-600 font-bold uppercase tracking-wider">IMD NE Warning API</div>
               <div className="font-bold text-slate-800 text-sm">{zone.current_rainfall_mm} mm</div>
+              <div className="text-[9px] text-slate-400">Precipitation Threshold</div>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center space-x-2.5">
-            <div className="p-2 rounded-md bg-emerald-50 text-emerald-600">
+            <div className="p-2 rounded-md bg-teal-50 text-[#1F9D75] flex-shrink-0">
               <Droplets className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-[10px] text-slate-400 uppercase font-semibold">Soil Moisture</div>
+              <div className="text-[9px] text-[#1F9D75] font-bold uppercase tracking-wider">Simulated IoT Sensor</div>
               <div className="font-bold text-slate-800 text-sm">{zone.current_soil_moisture_pct}%</div>
+              <div className="text-[9px] text-slate-400">Pore Saturation (Pilot Target)</div>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center space-x-2.5">
-            <div className="p-2 rounded-md bg-orange-50 text-orange-600">
+            <div className="p-2 rounded-md bg-orange-50 text-[#E8703A] flex-shrink-0">
               <Mountain className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-[10px] text-slate-400 uppercase font-semibold">Slope Angle</div>
+              <div className="text-[9px] text-[#E8703A] font-bold uppercase tracking-wider">SRTM DEM (via GEE)</div>
               <div className="font-bold text-slate-800 text-sm">{zone.slope_angle_deg}°</div>
+              <div className="text-[9px] text-slate-400">Slope Gradient Angle</div>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 p-2.5 rounded-lg flex items-center space-x-2.5">
-            <div className="p-2 rounded-md bg-purple-50 text-purple-600">
+            <div className="p-2 rounded-md bg-purple-50 text-purple-600 flex-shrink-0">
               <Compass className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-[10px] text-slate-400 uppercase font-semibold">Elevation</div>
+              <div className="text-[9px] text-purple-600 font-bold uppercase tracking-wider">Sentinel-2 / DEM</div>
               <div className="font-bold text-slate-800 text-sm">{zone.elevation_m} m</div>
+              <div className="text-[9px] text-slate-400">Orographic Terrain Relief</div>
             </div>
           </div>
 
+        </div>
+
+        {/* Real Data Provenance Note */}
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] text-slate-600 flex items-center justify-between">
+          <span className="truncate">Data Sources: IMD Bulletins, GEE Sentinel-2/DEM, GSI NLSM</span>
+          <span className="font-bold text-[#1F9D75] flex-shrink-0 ml-1">Open Specs</span>
         </div>
 
         {/* DEMO ACTION: Simulate Rainfall Spike Button */}

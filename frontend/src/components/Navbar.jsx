@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, Activity, Radio, AlertTriangle, Bell, MapPin, Send } from 'lucide-react';
+import { ShieldAlert, Activity, Radio, AlertTriangle, Bell, MapPin, Send, Database } from 'lucide-react';
 
 export default function Navbar({ 
   totalZones = 0, 
@@ -73,6 +73,18 @@ export default function Navbar({
             >
               <Radio className="h-4 w-4 text-emerald-400" />
               <span>Field Reports</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('methodology')}
+              className={`px-3.5 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center space-x-1.5 ${
+                activeTab === 'methodology'
+                  ? 'bg-white/15 text-white shadow-sm border border-white/20'
+                  : 'text-slate-300 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Database className="h-4 w-4 text-sky-400" />
+              <span>Data Sources</span>
             </button>
           </nav>
 
