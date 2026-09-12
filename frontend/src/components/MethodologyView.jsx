@@ -158,9 +158,9 @@ export default function MethodologyView({ onBackToDashboard, onNavigateTab, onSe
 
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 relative">
             <div className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-xs mb-2">4</div>
-            <h4 className="font-bold text-slate-800">Dissemination</h4>
+            <h4 className="font-bold text-slate-800">Dissemination & SACHET Feed</h4>
             <p className="text-slate-500 text-[11px] mt-1">
-              Interactive Web GIS dashboard for officials + automated out-of-band SMS alerts fired at Critical threshold (&gt;80).
+              Interactive Web GIS for officials + out-of-band SMS alerts + OASIS CAP v1.2 upstream export directly to NDMA's SACHET platform.
             </p>
           </div>
 

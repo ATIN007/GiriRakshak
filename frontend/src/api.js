@@ -372,3 +372,90 @@ export async function apiSendTestAlert(zoneId, phone) {
   });
   return { success: true };
 }
+
+// 9. Format Alert as OASIS CAP v1.2 XML (Common Alerting Protocol for NDMA SACHET)
+export function formatClientCAPXml(alert, zone) {
+  const sentDate = alert.sent_at ? new Date(alert.sent_at) : new Date();
+  const sentIso = sentDate.toISOString();
+  const expiresDate = new Date(sentDate.getTime() + 6 * 3600 * 1000);
+  const expiresIso = expiresDate.toISOString();
+
+  const zoneName = zone?.name || alert.zones?.name || "NH-6 / NH-37 Highway Sector";
+  const zoneId = alert.zone_id || zone?.id || 1;
+  const lat = Number(zone?.lat || 25.85).toFixed(4);
+  const lon = Number(zone?.lon || 92.35).toFixed(4);
+  const riskScore = Math.round(Number(alert.risk_score || 90));
+
+  const isCritical = riskScore >= 80;
+  const urgency = isCritical ? "Immediate" : "Expected";
+  const severity = isCritical ? "Extreme" : "Severe";
+  const certainty = isCritical ? "Observed" : "Likely";
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<alert xmlns="urn:oasis:names:tc:emergency:cap:1.2">
+  <identifier>IN-NDMA-GIRIRAKSHAK-${sentDate.toISOString().slice(0,10).replace(/-/g,'')}-${String(zoneId).padStart(2,'0')}-${alert.id || 'DEMO'}</identifier>
+  <sender>girirakshak-ner@ndma.gov.in</sender>
+  <sent>${sentIso}</sent>
+  <status>Actual</status>
+  <msgType>Alert</msgType>
+  <source>GiriRakshak AI Landslide Early Warning Engine (North Eastern Region)</source>
+  <scope>Public</scope>
+  <code>IPAWS-CAP-1.2</code>
+  <code>NDMA-SACHET-INTEGRATED</code>
+  <info>
+    <language>en-IN</language>
+    <category>Geo</category>
+    <event>Landslide / Slope Failure Threat</event>
+    <responseType>${isCritical ? 'Evacuate' : 'Prepare'}</responseType>
+    <urgency>${urgency}</urgency>
+    <severity>${severity}</severity>
+    <certainty>${certainty}</certainty>
+    <eventCode>
+      <valueName>SAME</valueName>
+      <value>LSW</value>
+    </eventCode>
+    <expires>${expiresIso}</expires>
+    <senderName>GiriRakshak Automated Warning Center (SDMA/NDMA Node)</senderName>
+    <headline>${isCritical ? 'CRITICAL LANDSLIDE EMERGENCY' : 'HIGH LANDSLIDE THREAT'}: Immediate Traffic Diversion on ${zoneName}</headline>
+    <description>${alert.message || 'Critical landslide hazard detected along road cutting.'}</description>
+    <instruction>Immediate Action Required: (1) Divert commercial vehicles to designated bypasses. (2) Clear roadside culverts. (3) Evacuate all temporary hillside dwelling settlements within a 500m radius of the unstable slope cut.</instruction>
+    <web>https://giri-rakshak-rho.vercel.app/</web>
+    <contact>Assam State Disaster Management Authority (ASDMA): 1070 / NDMA: 1078</contact>
+    <parameter>
+      <valueName>PlatformIntegration</valueName>
+      <value>NDMA SACHET National Disaster Alerting Portal (X.1303)</value>
+    </parameter>
+    <parameter>
+      <valueName>GiriRakshakRiskScore</valueName>
+      <value>${riskScore}/100</value>
+    </parameter>
+    <parameter>
+      <valueName>HighwayCorridor</valueName>
+      <value>NH-6 / Old NH-44 and NH-37 Corridors (Assam-Meghalaya)</value>
+    </parameter>
+    <area>
+      <areaDesc>${zoneName}, NH-44 / NH-37 Highway Sector, North East India</areaDesc>
+      <circle>${lat},${lon},2.5</circle>
+    </area>
+  </info>
+</alert>`;
+}
+
+// 10. Export Alert as CAP XML (Attempts backend API first, falls back to client serializer)
+export async function apiExportCapAlert(alertId, alert, zone) {
+  const backendUp = await checkBackend();
+  if (backendUp) {
+    try {
+      const res = await fetch(`${API_BASE}/alerts/${alertId}/export-cap`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        return data.cap_xml;
+      }
+    } catch (e) {
+      // fallback to client-side CAP generation
+    }
+  }
+
+  return formatClientCAPXml(alert, zone);
+}
+

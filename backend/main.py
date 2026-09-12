@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from database import supabase
 from ml.predictor import predict_risk
 from sms import send_critical_sms_alert
+from cap_alert import format_as_cap_alert
 
 app = FastAPI(
     title="GiriRakshak AI Landslide Warning API",
@@ -367,3 +368,42 @@ def send_test_alert(payload: SendTestAlertRequest):
         return {"success": True, "dispatch_info": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Test alert failed: {str(e)}")
+
+@app.post("/alerts/{alert_id}/export-cap", tags=["Government Integration (NDMA SACHET)"])
+@app.get("/alerts/{alert_id}/export-cap", tags=["Government Integration (NDMA SACHET)"])
+def export_alert_as_cap(alert_id: int):
+    """
+    GOVERNMENT INTEGRATION (NDMA SACHET):
+    Exports an alert formatted as an OASIS CAP v1.2 XML document.
+    In production, this XML is pushed to NDMA's SACHET national alerting gateway.
+    """
+    try:
+        alert_res = supabase.table("alerts_log").select("*").eq("id", alert_id).execute()
+        if not alert_res.data:
+            raise HTTPException(status_code=404, detail=f"Alert {alert_id} not found")
+        
+        alert = alert_res.data[0]
+        zone_id = alert.get("zone_id") or 5
+        zone_res = supabase.table("zones").select("*").eq("id", zone_id).execute()
+        zone = zone_res.data[0] if zone_res.data else {"id": zone_id, "name": "NH-6 Highway Corridor", "lat": 25.85, "lon": 92.35}
+
+        cap_xml = format_as_cap_alert(
+            zone=zone,
+            risk_score=float(alert.get("risk_score") or 90.0),
+            message=alert.get("message", "Critical Landslide Emergency"),
+            alert_id=alert_id,
+            sent_at=alert.get("sent_at")
+        )
+
+        return {
+            "alert_id": alert_id,
+            "zone_name": zone.get("name"),
+            "format": "OASIS CAP v1.2 / ITU-T X.1303",
+            "target_system": "NDMA SACHET Integrated Alert System",
+            "cap_xml": cap_xml
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"CAP export failed: {str(e)}")
+
