@@ -4,6 +4,7 @@ import {
   Layers, BarChart2, ShieldCheck, ArrowRight, Zap, Info, ChevronRight 
 } from 'lucide-react';
 import { apiFetchModelBenchmark, DEFAULT_MODEL_BENCHMARK } from '../api';
+import ReferencesSection from './ReferencesSection';
 
 export default function AboutModelView({ onBackToDashboard }) {
   const [benchmark, setBenchmark] = useState(DEFAULT_MODEL_BENCHMARK);
@@ -324,6 +325,11 @@ export default function AboutModelView({ onBackToDashboard }) {
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
+      </div>
+
+      {/* Scientific Foundations & References Section */}
+      <div className="mt-8 mb-4">
+        <ReferencesSection />
       </div>
 
     </div>

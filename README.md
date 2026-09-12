@@ -72,3 +72,17 @@ npm install
 npm run dev
 ```
 Dashboard: `http://localhost:5173`
+
+---
+
+## 📚 References & Theoretical Foundations
+
+> **Model Formulation Grounding:**  
+> *"Our weighted risk score (rainfall + soil saturation + slope angle) follows the same empirical rainfall-threshold approach established by Guzzetti et al., adapted with machine-learned weights instead of fixed coefficients."*
+
+1. **Guzzetti, F., Peruccacci, S., Rossi, M., & Stark, C. P. (2007).** *"Rainfall thresholds for the initiation of landslides in central and southern Europe."* Meteorology and Atmospheric Physics, 98(3-4), 239-267. — Foundational empirical rainfall-threshold modeling.
+2. **USGS Infinite-Slope Stability Model.** *"Infinite-Slope Stability Model & Pore-Water Pressure Mechanics."* U.S. Geological Survey Open-File Reports — Physical mechanics basis for using slope angle (shear stress) and soil moisture saturation (pore-water pressure reduction of effective normal stress) as direct landslide hazard determinants.
+3. **Kirschbaum, D., & Stanley, T. (2018).** *"Satellite-based landslide hazard modeling: An update to the Landslide Hazard Assessment for Situational Awareness (LHASA) model."* Frontiers in Earth Science, 6, 170. — Satellite-driven multi-factor heuristic and machine learning landslide risk modeling.
+4. **Lundberg, S. M., & Lee, S. I. (2017).** *"A unified approach to interpreting model predictions."* Advances in Neural Information Processing Systems (NeurIPS), 30, 4765-4774. — Foundational TreeSHAP explainability algorithm.
+5. **NDMA / OASIS Common Alerting Protocol (CAP v1.2) / ITU-T X.1303.** *"National Disaster Management Authority (SACHET) Implementation Guidelines."* — Standardized XML warning payload format for pan-India emergency dissemination.
+

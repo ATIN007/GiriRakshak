@@ -4,6 +4,7 @@ import {
   CheckCircle2, ExternalLink, ShieldAlert, Cpu, ArrowRight, Info, AlertCircle 
 } from 'lucide-react';
 import SolutionMatrix from './SolutionMatrix';
+import ReferencesSection from './ReferencesSection';
 
 export default function MethodologyView({ onBackToDashboard, onNavigateTab, onSelectZone }) {
   const dataSources = [
@@ -248,6 +249,11 @@ export default function MethodologyView({ onBackToDashboard, onNavigateTab, onSe
             );
           })}
         </div>
+      </div>
+
+      {/* Scientific Foundations & References Section */}
+      <div className="mt-10">
+        <ReferencesSection />
       </div>
 
       {/* Return Button */}
