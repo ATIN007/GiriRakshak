@@ -5,6 +5,7 @@ import ZoneDetailPanel from './components/ZoneDetailPanel';
 import AlertsView from './components/AlertsView';
 import ReportsView from './components/ReportsView';
 import MethodologyView from './components/MethodologyView';
+import AboutModelView from './components/AboutModelView';
 import { 
   apiFetchZones, 
   apiFetchZoneDetails, 
@@ -142,7 +143,7 @@ export default function App() {
       const newRainfall = Math.min(260, Math.round(zone.current_rainfall_mm + 60 + Math.random() * 30));
       const newMoisture = Math.min(98, Math.round(zone.current_soil_moisture_pct + 20 + Math.random() * 15));
 
-      const result = await apiSimulateZone(zone, newRainfall, newMoisture);
+      const result = await apiSimulateZone(zone, newRainfall, newMoisture, zones);
       const newScore = result.prediction.risk_score;
       const newLevel = result.prediction.risk_level;
       const newShap = result.prediction.shap_breakdown;
@@ -286,6 +287,7 @@ export default function App() {
             {selectedZone && (
               <ZoneDetailPanel
                 zone={selectedZone}
+                allZones={zones}
                 onClose={() => setSelectedZone(null)}
                 onSimulateSpike={handleSimulateSpike}
                 simulating={simulating}
@@ -317,6 +319,13 @@ export default function App() {
         {/* Tab 4: Data Sources & Methodology */}
         {activeTab === 'methodology' && (
           <MethodologyView
+            onBackToDashboard={() => setActiveTab('dashboard')}
+          />
+        )}
+
+        {/* Tab 5: About the Model */}
+        {activeTab === 'model' && (
+          <AboutModelView
             onBackToDashboard={() => setActiveTab('dashboard')}
           />
         )}

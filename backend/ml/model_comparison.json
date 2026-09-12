@@ -1,0 +1,50 @@
+{
+  "models": {
+    "Logistic Regression": {
+      "name": "Logistic Regression",
+      "type": "Linear Baseline",
+      "description": "Linear probabilistic classifier with L2 regularization. High interpretability, but struggles with non-linear soil-moisture-slope interaction thresholds.",
+      "metrics": {
+        "accuracy": 0.8336,
+        "precision": 0.8135,
+        "recall": 0.7824,
+        "f1": 0.7977
+      }
+    },
+    "Random Forest": {
+      "name": "Random Forest",
+      "type": "Ensemble Bagging",
+      "description": "Forest of 160 decision trees. Strong resilience to noisy field sensor feeds and robust capture of slope-moisture threshold cliffs.",
+      "metrics": {
+        "accuracy": 0.8416,
+        "precision": 0.8273,
+        "recall": 0.7863,
+        "f1": 0.8063
+      }
+    },
+    "XGBoost": {
+      "name": "XGBoost",
+      "type": "Gradient Boosting",
+      "description": "Sequentially boosted shallow trees optimizing log-loss. Exceptional performance on complex interaction surfaces with minimal variance.",
+      "metrics": {
+        "accuracy": 0.832,
+        "precision": 0.8103,
+        "recall": 0.7824,
+        "f1": 0.7961
+      }
+    }
+  },
+  "features": [
+    "rainfall_mm",
+    "rolling_rainfall_24h",
+    "rolling_rainfall_72h",
+    "soil_moisture_pct",
+    "slope_angle_deg",
+    "elevation_m",
+    "avg_neighbor_risk"
+  ],
+  "sample_count": 2500,
+  "test_split": 0.25,
+  "winner": "Random Forest",
+  "winner_reason": "Random Forest achieved the highest F1-Score (0.8063) on the holdout test set, striking the optimal balance between disaster detection recall (78.6%) and false-alarm prevention precision (82.7%)."
+}

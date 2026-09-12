@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   X, CloudRain, Droplets, Mountain, Compass, Zap, 
-  AlertOctagon, CheckCircle2, TrendingUp, Info, Activity 
+  AlertOctagon, CheckCircle2, TrendingUp, Info, Activity, Clock, MapPin 
 } from 'lucide-react';
 import { 
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, 
@@ -11,6 +11,7 @@ import { getRiskColor, getRiskBadgeClass } from '../config';
 
 export default function ZoneDetailPanel({ 
   zone, 
+  allZones = [],
   onClose, 
   onSimulateSpike, 
   simulating = false 
@@ -20,22 +21,61 @@ export default function ZoneDetailPanel({
   const riskColor = getRiskColor(zone.current_risk_score);
   const badgeClass = getRiskBadgeClass(zone.risk_level);
 
-  // Extract latest SHAP breakdown from history if available, or fallback
-  const latestHistory = zone.history && zone.history.length > 0 ? zone.history[0] : null;
+  // Compute 24h & 72h rolling precipitation from history
+  const history = zone.history || [];
+  const pastRain = history.map(h => Number(h.rainfall_mm) || 0);
+  const rolling24h = Math.round(Math.max(zone.current_rainfall_mm, zone.current_rainfall_mm + pastRain.slice(0, 3).reduce((a, b) => a + b, 0) * 0.35));
+  const rolling72h = Math.round(Math.max(rolling24h, rolling24h + pastRain.slice(0, 8).reduce((a, b) => a + b, 0) * 0.55));
+
+  // Compute 3-NN spatial cluster risk
+  let avgNeighborRisk = 32;
+  if (allZones && allZones.length > 1) {
+    const distances = allZones
+      .filter(z => z.id !== zone.id)
+      .map(z => ({
+        d: Math.pow(z.lat - zone.lat, 2) + Math.pow(z.lon - zone.lon, 2),
+        score: z.current_risk_score || 30
+      }))
+      .sort((a, b) => a.d - b.d);
+    const nearest3 = distances.slice(0, 3);
+    if (nearest3.length > 0) {
+      avgNeighborRisk = Math.round(nearest3.reduce((acc, curr) => acc + curr.score, 0) / nearest3.length);
+    }
+  }
+
+  // Extract latest SHAP breakdown from history if available
+  const latestHistory = history.length > 0 ? history[0] : null;
   const shapRaw = latestHistory?.shap_breakdown || {
-    rainfall: 0.35,
-    soil_moisture: 0.35,
-    slope: 0.20,
-    elevation: 0.10
+    instant_rainfall: 0.16,
+    rolling_24h: 0.14,
+    rolling_72h: 0.22,
+    soil_moisture: 0.18,
+    slope: 0.16,
+    elevation: 0.04,
+    neighbor_risk: 0.10
   };
 
-  // Format SHAP data for horizontal bar chart
-  const shapChartData = [
-    { name: 'Rainfall', value: Math.round((shapRaw.rainfall || 0) * 100), fill: '#3B82F6' },
-    { name: 'Soil Moisture', value: Math.round((shapRaw.soil_moisture || 0) * 100), fill: '#1F9D75' },
-    { name: 'Slope Angle', value: Math.round((shapRaw.slope || 0) * 100), fill: '#E8703A' },
-    { name: 'Elevation', value: Math.round((shapRaw.elevation || 0) * 100), fill: '#8B5CF6' }
-  ].sort((a, b) => b.value - a.value);
+  // Support both 7-feature keys and legacy 4-feature keys
+  const shapChartData = [];
+  if (shapRaw.rolling_72h !== undefined || shapRaw.neighbor_risk !== undefined) {
+    shapChartData.push(
+      { name: '72h Accum.', value: Math.round((shapRaw.rolling_72h || 0) * 100), fill: '#1D4ED8' },
+      { name: 'Soil Moisture', value: Math.round((shapRaw.soil_moisture || 0) * 100), fill: '#1F9D75' },
+      { name: 'Slope Angle', value: Math.round((shapRaw.slope || 0) * 100), fill: '#E8703A' },
+      { name: '24h Rain', value: Math.round((shapRaw.rolling_24h || 0) * 100), fill: '#3B82F6' },
+      { name: 'Neighbor Risk', value: Math.round((shapRaw.neighbor_risk || 0) * 100), fill: '#0D9488' },
+      { name: 'Instant Rain', value: Math.round((shapRaw.instant_rainfall || shapRaw.rainfall || 0) * 100), fill: '#60A5FA' },
+      { name: 'Elevation', value: Math.round((shapRaw.elevation || 0) * 100), fill: '#8B5CF6' }
+    );
+  } else {
+    shapChartData.push(
+      { name: 'Rainfall', value: Math.round((shapRaw.rainfall || 0) * 100), fill: '#3B82F6' },
+      { name: 'Soil Moisture', value: Math.round((shapRaw.soil_moisture || 0) * 100), fill: '#1F9D75' },
+      { name: 'Slope Angle', value: Math.round((shapRaw.slope || 0) * 100), fill: '#E8703A' },
+      { name: 'Elevation', value: Math.round((shapRaw.elevation || 0) * 100), fill: '#8B5CF6' }
+    );
+  }
+  shapChartData.sort((a, b) => b.value - a.value);
 
   // Format chronological history for line chart
   const historyChartData = (zone.history || [])
@@ -101,6 +141,35 @@ export default function ZoneDetailPanel({
           </div>
         </div>
 
+        {/* Temporal & Spatial Engineered Features Highlight Bar */}
+        <div className="bg-gradient-to-r from-blue-50 via-teal-50 to-emerald-50 border border-teal-200 rounded-xl p-3 space-y-2">
+          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <span className="flex items-center space-x-1">
+              <Clock className="h-3 w-3 text-blue-600" />
+              <span>Temporal Saturation</span>
+            </span>
+            <span className="flex items-center space-x-1">
+              <MapPin className="h-3 w-3 text-[#1F9D75]" />
+              <span>Spatial 3-NN</span>
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className="bg-white/80 rounded-lg p-1.5 border border-blue-100">
+              <div className="text-[9px] text-blue-600 font-medium">24h Rolling</div>
+              <div className="font-bold text-slate-800">{rolling24h} mm</div>
+            </div>
+            <div className="bg-white/80 rounded-lg p-1.5 border border-blue-100">
+              <div className="text-[9px] text-blue-700 font-medium">72h Cumulative</div>
+              <div className="font-bold text-slate-800">{rolling72h} mm</div>
+            </div>
+            <div className="bg-white/80 rounded-lg p-1.5 border border-teal-100">
+              <div className="text-[9px] text-[#1F9D75] font-medium">Neighbor Risk</div>
+              <div className="font-bold text-slate-800">{avgNeighborRisk} / 100</div>
+            </div>
+          </div>
+        </div>
+
         {/* Live Terrain & Telemetry 4-Grid with Specific Real Product Labels */}
         <div className="grid grid-cols-2 gap-2 text-xs">
           
@@ -111,7 +180,7 @@ export default function ZoneDetailPanel({
             <div>
               <div className="text-[9px] text-blue-600 font-bold uppercase tracking-wider">IMD NE Warning API</div>
               <div className="font-bold text-slate-800 text-sm">{zone.current_rainfall_mm} mm</div>
-              <div className="text-[9px] text-slate-400">Precipitation Threshold</div>
+              <div className="text-[9px] text-slate-400">Instantaneous Trigger</div>
             </div>
           </div>
 
@@ -122,7 +191,7 @@ export default function ZoneDetailPanel({
             <div>
               <div className="text-[9px] text-[#1F9D75] font-bold uppercase tracking-wider">Simulated IoT Sensor</div>
               <div className="font-bold text-slate-800 text-sm">{zone.current_soil_moisture_pct}%</div>
-              <div className="text-[9px] text-slate-400">Pore Saturation (Pilot Target)</div>
+              <div className="text-[9px] text-slate-400">Pore Saturation (Pilot)</div>
             </div>
           </div>
 
@@ -144,16 +213,10 @@ export default function ZoneDetailPanel({
             <div>
               <div className="text-[9px] text-purple-600 font-bold uppercase tracking-wider">Sentinel-2 / DEM</div>
               <div className="font-bold text-slate-800 text-sm">{zone.elevation_m} m</div>
-              <div className="text-[9px] text-slate-400">Orographic Terrain Relief</div>
+              <div className="text-[9px] text-slate-400">Orographic Relief</div>
             </div>
           </div>
 
-        </div>
-
-        {/* Real Data Provenance Note */}
-        <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px] text-slate-600 flex items-center justify-between">
-          <span className="truncate">Data Sources: IMD Bulletins, GEE Sentinel-2/DEM, GSI NLSM</span>
-          <span className="font-bold text-[#1F9D75] flex-shrink-0 ml-1">Open Specs</span>
         </div>
 
         {/* DEMO ACTION: Simulate Rainfall Spike Button */}
@@ -169,7 +232,7 @@ export default function ZoneDetailPanel({
             </span>
           </button>
           <p className="text-[10px] text-slate-400 text-center mt-1">
-            Pushes acute rainfall surge into zone & re-runs AI inference with SHAP.
+            Pushes rainfall surge, updates 24h/72h buildup & re-evaluates risk with SHAP.
           </p>
         </div>
 
@@ -183,14 +246,14 @@ export default function ZoneDetailPanel({
               </span>
             </div>
             <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium">
-              USP 1
+              USP 1 • {shapChartData.length} Features
             </span>
           </div>
           <p className="text-[10px] text-slate-500 mb-2">
             Relative weight contributing to the current risk score:
           </p>
 
-          <div className="h-36 w-full">
+          <div className="h-44 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 layout="vertical"
@@ -198,12 +261,12 @@ export default function ZoneDetailPanel({
                 margin={{ top: 5, right: 25, left: 10, bottom: 5 }}
               >
                 <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fontSize: 9 }} />
-                <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#475569' }} width={75} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#475569' }} width={80} />
                 <Tooltip 
                   formatter={(val) => [`${val}% Contribution`, 'SHAP Weight']}
                   contentStyle={{ fontSize: '11px', borderRadius: '8px' }}
                 />
-                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={14} />
+                <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={12} />
               </BarChart>
             </ResponsiveContainer>
           </div>
