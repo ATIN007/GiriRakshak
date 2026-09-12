@@ -50,7 +50,7 @@ export default function SolutionMatrix({ onNavigateTab, onSelectZone }) {
       tag: "Problem #3: Resilience & Cost",
       tagColor: "bg-emerald-100 text-emerald-800 border-emerald-200",
       solutionHeadline: "Sensor-Free Satellite Ingestion + Offline PWA + SMS Fallback",
-      solutionDetail: "Operates sensor-free via open Sentinel-2 & IMD feeds. Field workers report ground cracks offline via browser localStorage, and alerts dispatch via carrier SMS without internet.",
+      solutionDetail: "Operates sensor-free via open ISRO Bhuvan / Sentinel-2 & IMD feeds. Field workers report ground cracks offline via browser localStorage, and alerts dispatch via carrier SMS without internet.",
       solvedIcon: WifiOff,
       solvedColor: "text-[#1F9D75] bg-emerald-50",
       cardBorder: "border-emerald-200 hover:border-emerald-300",

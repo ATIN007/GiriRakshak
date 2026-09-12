@@ -200,7 +200,7 @@ export default function ZoneDetailPanel({
               <Mountain className="h-4 w-4" />
             </div>
             <div>
-              <div className="text-[9px] text-[#E8703A] font-bold uppercase tracking-wider">SRTM DEM (via GEE)</div>
+              <div className="text-[9px] text-[#E8703A] font-bold uppercase tracking-wider">ISRO Bhuvan / DEM</div>
               <div className="font-bold text-slate-800 text-sm">{zone.slope_angle_deg}°</div>
               <div className="text-[9px] text-slate-400">Slope Gradient Angle</div>
             </div>

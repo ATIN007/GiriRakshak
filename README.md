@@ -20,7 +20,7 @@ Instead of creating a siloed, redundant warning channel, GiriRakshak serves as a
 ## ⚡ Core USPs
 
 1. **Explainable AI (XAI):** Uses `shap.TreeExplainer` on every prediction to produce feature attribution weights (`72h Accumulation`, `Soil Moisture`, `Slope Angle`, `24h Rain`, `Neighbor Risk`, `Instant Rain`, `Elevation`), enabling transparent and defensible administrative decisions.
-2. **Scalable, Sensor-Free Coverage:** Combines open Google Earth Engine (Sentinel-2 + SRTM 30m DEM) with IMD's NE Warning Bulletins and GSI's NLSM records to monitor hundreds of kilometers without requiring physical ₹25 Lakh sensors on every slope.
+2. **Scalable, Sensor-Free Coverage:** Combines ISRO Bhuvan WMS & Bhoonidhi platform (Sentinel-2 + Cartosat/DEM) with IMD's NE Warning Bulletins and GSI's NLSM records to monitor hundreds of kilometers without requiring physical ₹25 Lakh sensors on every slope.
 3. **Offline-First Resilience:** PWA citizen and officer field reporting queues observations in browser `localStorage` during communication blackouts and auto-syncs upon reconnection. Critical alerts dispatch via carrier SMS without requiring mobile internet.
 
 ---

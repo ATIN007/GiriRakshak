@@ -24,16 +24,17 @@ export default function MethodologyView({ onBackToDashboard, onNavigateTab, onSe
     },
     {
       id: 'satellite',
-      name: "Sentinel-2 Optical Imagery & NASA/USGS SRTM 30m Digital Elevation Model (DEM)",
-      shortTitle: "Satellite Imagery & Terrain Elevation",
+      name: "ISRO Bhuvan / Sentinel-2, accessed via Bhuvan's Web Map Services (WMS) and the Bhuvan API (bhuvan-app1.nrsc.gov.in/api) for thematic and terrain layers.",
+      shortTitle: "ISRO Bhuvan Satellite & Terrain Feeds",
       category: "Geospatial & Remote Sensing",
       categoryColor: "bg-purple-100 text-purple-800 border-purple-200",
       icon: Satellite,
       iconBg: "bg-purple-50 text-purple-600",
       provides: "Continuous topographical slope angle (°), terrain elevation (m), slope aspect, catchment drainage geometry, and Normalized Difference Vegetation Index (NDVI) to track vegetation loss along highway embankments.",
-      acquisition: "Accessed programmatically via Google Earth Engine (GEE) REST API (free, open-access, zero acquisition cost).",
-      acquisitionType: "GEE API (Open Access)",
-      statusBadge: "Free / Open Access",
+      acquisition: "ISRO Bhuvan / Sentinel-2, accessed via Bhuvan's Web Map Services (WMS) and the Bhuvan API (bhuvan-app1.nrsc.gov.in/api) for thematic and terrain layers.",
+      acquisitionNote: "Bulk numeric feature extraction (slope, elevation, NDVI) for model training uses open SRTM DEM data; a production deployment would formally register for Bhoonidhi API access to pull ISRO's raw satellite products directly.",
+      acquisitionType: "Bhuvan WMS & Bhoonidhi API",
+      statusBadge: "ISRO Bhuvan / Bhoonidhi",
       statusColor: "bg-purple-50 text-purple-700 border-purple-200"
     },
     {
@@ -137,7 +138,7 @@ export default function MethodologyView({ onBackToDashboard, onNavigateTab, onSe
             <div className="w-6 h-6 rounded-full bg-[#1F3864] text-white flex items-center justify-center font-bold text-xs mb-2">1</div>
             <h4 className="font-bold text-slate-800">Data Input</h4>
             <p className="text-slate-500 text-[11px] mt-1">
-              5 streams: IMD rainfall, Sentinel-2/DEM terrain, soil moisture probes, GSI NLSM records, OSM vectors.
+              5 streams: IMD rainfall, ISRO Bhuvan/Sentinel-2 terrain, soil moisture probes, GSI NLSM records, OSM vectors.
             </p>
           </div>
 
@@ -234,13 +235,21 @@ export default function MethodologyView({ onBackToDashboard, onNavigateTab, onSe
                   </div>
 
                   {/* How we'd acquire it */}
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <div className="text-[10px] font-bold uppercase text-slate-500 tracking-wider mb-1">
-                      Acquisition Method
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex flex-col justify-between">
+                    <div>
+                      <div className="text-[10px] font-bold uppercase text-slate-500 tracking-wider mb-1">
+                        Acquisition Method
+                      </div>
+                      <p className="text-slate-700 leading-relaxed">
+                        {source.acquisition}
+                      </p>
                     </div>
-                    <p className="text-slate-700 leading-relaxed">
-                      {source.acquisition}
-                    </p>
+                    {source.acquisitionNote && (
+                      <div className="mt-2 text-[10px] text-purple-900 bg-purple-50 p-2 rounded-lg border border-purple-200 leading-normal">
+                        <span className="font-bold text-purple-800">Production Note: </span>
+                        {source.acquisitionNote}
+                      </div>
+                    )}
                   </div>
 
                 </div>

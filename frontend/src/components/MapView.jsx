@@ -1,12 +1,13 @@
-import React from 'react';
-import { MapContainer, TileLayer, CircleMarker, Tooltip, Popup } from 'react-leaflet';
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, WMSTileLayer, CircleMarker, Tooltip, Popup } from 'react-leaflet';
 import { getRiskColor, getRiskBadgeClass } from '../config';
-import { AlertTriangle, TrendingUp, Compass, CloudRain, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, TrendingUp, Compass, CloudRain, CheckCircle2, Layers } from 'lucide-react';
 
 export default function MapView({ zones = [], selectedZone, onSelectZone, onOpenSolutionModal }) {
   // Center of Assam/Meghalaya corridor (between Guwahati, Shillong, and Kaziranga)
   const defaultCenter = [25.85, 92.35];
   const defaultZoom = 8;
+  const [activeLayer, setActiveLayer] = useState('bhuvan');
 
   return (
     <div className="relative w-full h-[calc(100vh-4rem)] bg-slate-100 overflow-hidden">
@@ -17,10 +18,31 @@ export default function MapView({ zones = [], selectedZone, onSelectZone, onOpen
         scrollWheelZoom={true}
         className="w-full h-full"
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        {activeLayer === 'bhuvan' && (
+          <WMSTileLayer
+            key="bhuvan-wms"
+            url="https://bhuvan-vec1.nrsc.gov.in/bhuvan/gwc/service/wms/?"
+            layers="india3"
+            format="image/png"
+            transparent={false}
+            version="1.1.1"
+            attribution='&copy; <a href="https://bhuvan.nrsc.gov.in" target="_blank" rel="noreferrer">ISRO / NRSC Bhuvan</a> (WMS Services)'
+          />
+        )}
+        {activeLayer === 'osm' && (
+          <TileLayer
+            key="osm-tiles"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+        )}
+        {activeLayer === 'satellite' && (
+          <TileLayer
+            key="satellite-tiles"
+            attribution='&copy; ISRO Bhuvan / Bhoonidhi &bull; Sentinel-2 Imagery'
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+          />
+        )}
 
         {zones.map((zone) => {
           const isSelected = selectedZone?.id === zone.id;
@@ -80,6 +102,57 @@ export default function MapView({ zones = [], selectedZone, onSelectZone, onOpen
           );
         })}
       </MapContainer>
+
+      {/* Live Map Layer Switcher Control (ISRO Bhuvan WMS / OSM / Satellite) */}
+      <div className={`absolute top-4 ${selectedZone ? 'right-4 md:right-[410px]' : 'right-4'} z-[400] transition-all duration-300 pointer-events-auto`}>
+        <div className="bg-white/95 backdrop-blur-md p-1.5 rounded-xl shadow-lg border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center gap-1.5">
+          <div className="flex items-center space-x-1.5 px-2 py-0.5 text-slate-600">
+            <Layers className="h-3.5 w-3.5 text-[#1F3864]" />
+            <span className="text-[11px] font-extrabold uppercase tracking-tight">Base Map:</span>
+          </div>
+          <div className="flex items-center bg-slate-100/90 p-0.5 rounded-lg border border-slate-200/60">
+            <button
+              type="button"
+              id="layer-btn-bhuvan"
+              onClick={() => setActiveLayer('bhuvan')}
+              className={`px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer ${
+                activeLayer === 'bhuvan'
+                  ? 'bg-[#1F3864] text-white shadow-sm ring-1 ring-[#1F3864]/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+              title="ISRO Bhuvan WMS (india3 + DEM Thematic Base)"
+            >
+              <span>🇮🇳 ISRO Bhuvan (WMS)</span>
+            </button>
+            <button
+              type="button"
+              id="layer-btn-osm"
+              onClick={() => setActiveLayer('osm')}
+              className={`px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer ${
+                activeLayer === 'osm'
+                  ? 'bg-[#1F3864] text-white shadow-sm ring-1 ring-[#1F3864]/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+              title="OpenStreetMap Standard Vector Tiles"
+            >
+              <span>🗺️ OpenStreetMap</span>
+            </button>
+            <button
+              type="button"
+              id="layer-btn-satellite"
+              onClick={() => setActiveLayer('satellite')}
+              className={`px-2.5 py-1 rounded-md text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer ${
+                activeLayer === 'satellite'
+                  ? 'bg-[#1F3864] text-white shadow-sm ring-1 ring-[#1F3864]/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+              }`}
+              title="Satellite / Cartosat & Sentinel-2 Optical Feeds"
+            >
+              <span>🛰️ Satellite</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Floating Highway Corridor Badges */}
       <div className="absolute top-4 left-4 z-[400] flex flex-col space-y-2 pointer-events-none">
